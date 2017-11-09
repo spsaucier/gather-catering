@@ -90,6 +90,7 @@ export default class EditableTable extends React.Component {
         title: "Date",
         dataIndex: "date",
         width: "60%",
+        sorter: (a, b) => parseInt(a.date.split("-").join(""), 10) - parseInt(b.date.split("-").join(""), 10),
         render: (text, record) => this.renderColumns(text, record, "date")
       },
       {

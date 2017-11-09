@@ -28,6 +28,7 @@ export default class EditableTable extends React.Component {
         title: "Quantity",
         className: "tar",
         dataIndex: "quantity",
+        sorter: (a, b) => a.quantity - b.quantity,
         render: (text, record) => text
       },
       {
