@@ -48,7 +48,7 @@ export default observer(App);
 
 const Home = () => (
   <div>
-    <p>Hello</p>
+    <h2 style={{marginTop: "20px"}}>Demo: Ingredients -> Products -> Orders</h2>
   </div>
 );
 
