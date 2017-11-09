@@ -1,6 +1,7 @@
 import React from "react";
 import { Table, Input } from "antd";
 import ingredients from "../constants/ingredients";
+import products from "../constants/products";
 import units from "../constants/units";
 
 function getRandomIntInclusive(min, max) {
@@ -123,7 +124,27 @@ export default class EditableTable extends React.Component {
   }
   render() {
     return (
-      <Table bordered dataSource={this.state.data} columns={this.columns} pagination={{pageSize: 50}} />
+      <Table
+        bordered
+        dataSource={this.state.data}
+        columns={this.columns}
+        pagination={{pageSize: 50}} 
+        expandedRowRender={record => {
+          let assocProducts = [];
+          let numberOfProducts = getRandomIntInclusive(0, 4);
+          for (var index = 0; index < numberOfProducts; index++) {
+            assocProducts.push(products[getRandomIntInclusive(0, products.length)]);
+          }
+          return <div>
+            <h5>Products using this ingredient:</h5>
+            <ul>
+              {assocProducts.length ? 
+                assocProducts.map((product, i) => <li key={i}>{product}</li>) : 
+                <p><em>No associated products</em></p>
+              }
+            </ul>
+          </div>
+        }}/>
     );
   }
 }
