@@ -12,12 +12,19 @@ function getRandomIntInclusive(min, max) {
 
 const data = [];
 for (let i = 0; i < ingredients.length; i++) {
-  data.push({
+  let ingredient = {
     key: i.toString(),
     name: ingredients[i],
     unit: units[getRandomIntInclusive(0, 49)],
     description: "Picanha ball tip short loin filet mignon burgdoggen. Pancetta burgdoggen tongue"
-  });
+  };
+  let assocProducts = [];
+  let numberOfProducts = getRandomIntInclusive(0, 4);
+  for (var index = 0; index < numberOfProducts; index++) {
+    assocProducts.push(products[getRandomIntInclusive(0, products.length)]);
+  }
+  ingredient.products = assocProducts;
+  data.push(ingredient);
 }
 
 const EditableCell = ({ editable, value, onChange }) => (
@@ -130,16 +137,11 @@ export default class EditableTable extends React.Component {
         columns={this.columns}
         pagination={{pageSize: 50}} 
         expandedRowRender={record => {
-          let assocProducts = [];
-          let numberOfProducts = getRandomIntInclusive(0, 4);
-          for (var index = 0; index < numberOfProducts; index++) {
-            assocProducts.push(products[getRandomIntInclusive(0, products.length)]);
-          }
           return <div>
             <h5>Products using this ingredient:</h5>
             <ul>
-              {assocProducts.length ? 
-                assocProducts.map((product, i) => <li key={i}>{product}</li>) : 
+              {record.products.length ? 
+                record.products.map((product, i) => <li key={i}>{product}</li>) : 
                 <p><em>No associated products</em></p>
               }
             </ul>
