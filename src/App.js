@@ -1,18 +1,23 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import { observer } from "mobx-react";
-import DevTools from "mobx-react-devtools";
 import { Menu } from "antd";
+import "./App.css";
 // import EditableTable from "./components/EditableTable";
 import IngredientsTable from "./components/IngredientsTable";
 import ProductsTable from "./components/ProductsTable";
 import OrdersTable from "./components/OrdersTable";
 import PacklistTable from "./components/PacklistTable";
-import './App.css';
 
-class App extends Component {
+import IngredientsStore from "./store/Ingredients";
+import ProductsStore from "./store/Products";
+import OrdersStore from "./store/Orders";
+import AggregatesStore from "./store/Aggregates";
+
+@observer class App extends Component {
   render() {
-    return <Router>
+    return (
+      <Router>
         <div className="App">
           <header className="App-header">
             <Menu mode="horizontal" theme="dark">
@@ -34,17 +39,17 @@ class App extends Component {
             </Menu>
           </header>
           <Route exact path="/" component={Home} />
-          <Route path="/ingredients" component={Ingredients} />
-          <Route path="/products" component={Products} />
-          <Route path="/orders" component={Orders} />
-          <Route path="/aggregate" component={Aggregate} />
-          <DevTools />
+          <Route path="/ingredients" component={IngredientsList} />
+          <Route path="/products" component={ProductsList} />
+          <Route path="/orders" component={OrdersList} />
+          <Route path="/aggregate" component={AggregateList} />
         </div>
-      </Router>;
+      </Router>
+    );
   }
 }
 
-export default observer(App);
+export default App;
 
 const Home = () => (
   <div>
@@ -52,26 +57,31 @@ const Home = () => (
   </div>
 );
 
-const Ingredients = () => (
+var ingredients = new IngredientsStore();
+var products = new ProductsStore();
+var orders = new OrdersStore();
+var aggregates = new AggregatesStore();
+
+const IngredientsList = () => (
   <div className="Main">
-    <IngredientsTable />
+    <IngredientsTable ingredients={ingredients}/>
   </div>
 );
 
-const Products = () => (
+const ProductsList = () => (
   <div className="Main">
-    <ProductsTable />
+    <ProductsTable products={products} ingredients={ingredients}/>
   </div>
 );
 
-const Orders = () => (
+const OrdersList = () => (
   <div className="Main">
-    <OrdersTable />
+    <OrdersTable orders={orders} products={products}/>
   </div>
 );
 
-const Aggregate = () => (
+const AggregateList = () => (
   <div className="Main">
-    <PacklistTable />
+    <PacklistTable aggregates={aggregates}/>
   </div>
 );

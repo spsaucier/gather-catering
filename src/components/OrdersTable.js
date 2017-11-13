@@ -1,25 +1,6 @@
 import React from "react";
 import { Table, Input, InputNumber, Select, Button } from "antd";
-import orders from "../constants/orders";
-import products from "../constants/products";
 const Option = Select.Option;
-
-function randomDate(rangeOfDays) {
-    var today = new Date(Date.now());
-    var date = new Date(today.getYear()+1900,today.getMonth(), today.getDate()+Math.random() *rangeOfDays);
-    return `${date.getYear() + 1900}-${date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1}-${date.getDate() < 10 ? "0" + date.getDate() : date.getDate()}`;
-}
-
-const data = [];
-for (let i = 0; i < orders.length; i++) {
-  data.push({
-    key: i.toString(),
-    name: orders[i],
-    date: randomDate(100),
-    productIds: [],
-    productQtys: []
-  });
-}
 
 const EditableCell = ({ editable, value, onChange }) => (
   <div>
@@ -35,7 +16,7 @@ const EditableCell = ({ editable, value, onChange }) => (
   </div>
 );
 
-const EditableSelect = ({ editable, value, onChange, placeholder }) => (
+const EditableSelect = ({ products, editable, value, onChange, placeholder }) => (
   <div>
     {editable ? (
       <Select
@@ -50,12 +31,12 @@ const EditableSelect = ({ editable, value, onChange, placeholder }) => (
       >
         {products.map((product, i) => (
           <Option key={i} value={i.toString()}>
-            {product}
+            {product.name}
           </Option>
         ))}
       </Select>
     ) : (
-      <span className="editable-value">{products[parseInt(value, 10)]}</span>
+      <span className="editable-value">{products[parseInt(value, 10)].name}</span>
     )}
   </div>
 );
@@ -90,7 +71,9 @@ export default class EditableTable extends React.Component {
         title: "Date",
         dataIndex: "date",
         width: "60%",
-        sorter: (a, b) => parseInt(a.date.split("-").join(""), 10) - parseInt(b.date.split("-").join(""), 10),
+        sorter: (a, b) =>
+          parseInt(a.date.split("-").join(""), 10) -
+          parseInt(b.date.split("-").join(""), 10),
         render: (text, record) => this.renderColumns(text, record, "date")
       },
       {
@@ -113,8 +96,8 @@ export default class EditableTable extends React.Component {
         }
       }
     ];
-    this.state = { data };
-    this.cacheData = data.map(item => ({ ...item }));
+    this.state = { data: props.orders.data.slice() }; // slice b/c https://mobx.js.org/refguide/array.html
+    this.cacheData = props.orders.data.map(item => ({ ...item }));
   }
   addProduct(key) {
     const newData = [...this.state.data];
@@ -192,36 +175,64 @@ export default class EditableTable extends React.Component {
         bordered
         dataSource={this.state.data}
         expandedRowRender={record => {
-          return <div>
-            {record.productIds.map((id, i) => {
-              return <div key={i} style={{display: "flex", width: "100%"}}>
-                <EditableNumber
-                  editable={record.editable}
-                  value={record.productQtys[i]}
-                  onChange={value => this.handleArrayChange(value, record.key, "productQtys", i)}
-                />
-                <span className="times"> &times; </span>
-                <EditableSelect
-                  editable={record.editable}
-                  value={record.productIds[i]}
-                  placeholder="Select an product"
-                  onChange={value => this.handleArrayChange(value, record.key, "productIds", i)}
-                />
-                {record.editable ? <Button
-                  type="default"
-                  icon="minus-circle-o"
-                  style={{marginLeft: "8px"}}
-                  onClick={() => this.removeProduct(record.key, i)}>Remove</Button> : ""}
-              </div>
-            })}
-            <Button
-              style={{marginTop: "5px"}}
-              type="primary"
-              icon="plus-circle-o"
-              onClick={() => this.addProduct(record.key)}>Add product</Button>
-          </div>
+          return (
+            <div>
+              {record.productIds.map((id, i) => {
+                return (
+                  <div key={i} style={{ display: "flex", width: "100%" }}>
+                    <EditableNumber
+                      editable={record.editable}
+                      value={record.productQtys[i]}
+                      onChange={value =>
+                        this.handleArrayChange(
+                          value,
+                          record.key,
+                          "productQtys",
+                          i
+                        )}
+                    />
+                    <span className="times"> &times; </span>
+                    <EditableSelect
+                      products={this.props.products.data}
+                      editable={record.editable}
+                      value={record.productIds[i]}
+                      placeholder="Select a product"
+                      onChange={value =>
+                        this.handleArrayChange(
+                          value,
+                          record.key,
+                          "productIds",
+                          i
+                        )}
+                    />
+                    {record.editable ? (
+                      <Button
+                        type="default"
+                        icon="minus-circle-o"
+                        style={{ marginLeft: "8px" }}
+                        onClick={() => this.removeProduct(record.key, i)}
+                      >
+                        Remove
+                      </Button>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                );
+              })}
+              <Button
+                style={{ marginTop: "5px" }}
+                type="primary"
+                icon="plus-circle-o"
+                onClick={() => this.addProduct(record.key)}
+              >
+                Add product
+              </Button>
+            </div>
+          );
         }}
-        columns={this.columns} />
+        columns={this.columns}
+      />
     );
   }
 }

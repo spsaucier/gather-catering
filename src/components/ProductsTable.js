@@ -1,19 +1,6 @@
 import React from "react";
 import { Table, Input, InputNumber, Select, Button } from "antd";
-import products from "../constants/products";
-import ingredients from "../constants/ingredients";
 const Option = Select.Option;
-
-const data = [];
-for (let i = 0; i < 100; i++) {
-  data.push({
-    key: i.toString(),
-    name: products[i % 22],
-    description: "Picanha ball tip short loin filet mignon burgdoggen. Pancetta burgdoggen tongue",
-    ingredientIds: [],
-    ingredientQtys: []
-  });
-}
 
 const EditableCell = ({ editable, value, onChange }) => (
   <div>
@@ -29,7 +16,13 @@ const EditableCell = ({ editable, value, onChange }) => (
   </div>
 );
 
-const EditableSelect = ({ editable, value, onChange, placeholder }) => (
+const EditableSelect = ({
+  ingredients,
+  editable,
+  value,
+  onChange,
+  placeholder
+}) => (
   <div>
     {editable ? (
       <Select
@@ -44,12 +37,12 @@ const EditableSelect = ({ editable, value, onChange, placeholder }) => (
       >
         {ingredients.map((ingredient, i) => (
           <Option key={i} value={i.toString()}>
-            {ingredient}
+            {ingredient.name}
           </Option>
         ))}
       </Select>
     ) : (
-      <span className="editable-value">{ingredients[parseInt(value, 10)]}</span>
+      <span className="editable-value">{ingredients[parseInt(value, 10)].name}</span>
     )}
   </div>
 );
@@ -106,8 +99,8 @@ export default class EditableTable extends React.Component {
         }
       }
     ];
-    this.state = { data };
-    this.cacheData = data.map(item => ({ ...item }));
+    this.state = { data: props.products.data.slice() }; // slice b/c https://mobx.js.org/refguide/array.html
+    this.cacheData = props.products.data.map(item => ({ ...item }));
   }
   addIngredient(key) {
     const newData = [...this.state.data];
@@ -195,6 +188,7 @@ export default class EditableTable extends React.Component {
                 />
                 <span className="times"> &times; </span>
                 <EditableSelect
+                  ingredients={this.props.ingredients.data}
                   editable={record.editable}
                   value={record.ingredientIds[i]}
                   placeholder="Select an Ingredient"

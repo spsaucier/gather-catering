@@ -1,31 +1,6 @@
 import React from "react";
+import DevTools from "mobx-react-devtools";
 import { Table, Input } from "antd";
-import ingredients from "../constants/ingredients";
-import products from "../constants/products";
-import units from "../constants/units";
-
-function getRandomIntInclusive(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-}
-
-const data = [];
-for (let i = 0; i < ingredients.length; i++) {
-  let ingredient = {
-    key: i.toString(),
-    name: ingredients[i],
-    unit: units[getRandomIntInclusive(0, 49)],
-    description: "Picanha ball tip short loin filet mignon burgdoggen. Pancetta burgdoggen tongue"
-  };
-  let assocProducts = [];
-  let numberOfProducts = getRandomIntInclusive(0, 4);
-  for (var index = 0; index < numberOfProducts; index++) {
-    assocProducts.push(products[getRandomIntInclusive(0, products.length)]);
-  }
-  ingredient.products = assocProducts;
-  data.push(ingredient);
-}
 
 const EditableCell = ({ editable, value, onChange }) => (
   <div>
@@ -83,8 +58,9 @@ export default class EditableTable extends React.Component {
         }
       }
     ];
-    this.state = { data };
-    this.cacheData = data.map(item => ({ ...item }));
+    console.info(props.ingredients.data)
+    this.state = { data: props.ingredients.data.slice() }; // slice b/c https://mobx.js.org/refguide/array.html
+    this.cacheData = props.ingredients.data.map(item => ({ ...item }));
   }
   renderColumns(text, record, column) {
     return (
@@ -117,7 +93,15 @@ export default class EditableTable extends React.Component {
     if (target) {
       delete target.editable;
       this.setState({ data: newData });
+      this.props.ingredients.save(newData);
       this.cacheData = newData.map(item => ({ ...item }));
+      // Send save request
+      // Save request goes to redux function (action creator)
+      // which toggles "getting now"
+      // then gets from API,
+      // then calls dispatch to say that it has changed
+      // reducer sorts it & returns a new state
+      // Container picks up the change & passes it back in
     }
   }
   cancel(key) {
@@ -130,23 +114,20 @@ export default class EditableTable extends React.Component {
     }
   }
   render() {
-    return (
-      <Table
-        bordered
-        dataSource={this.state.data}
-        columns={this.columns}
-        pagination={{pageSize: 50}} 
-        expandedRowRender={record => {
-          return <div>
-            <h5>Products using this ingredient:</h5>
-            <ul>
-              {record.products.length ? 
-                record.products.map((product, i) => <li key={i}>{product}</li>) : 
-                <p><em>No associated products</em></p>
-              }
-            </ul>
-          </div>
-        }}/>
-    );
+    return <div>
+        <Table bordered dataSource={this.state.data} columns={this.columns} pagination={{ pageSize: 50 }} expandedRowRender={record => {
+            return <div>
+                <h5>Products using this ingredient:</h5>
+                <ul>
+                  {record.products.length ? record.products.map(
+                      (product, i) => <li key={i}>{product}</li>
+                    ) : <p>
+                      <em>No associated products</em>
+                    </p>}
+                </ul>
+              </div>;
+          }} />
+        <DevTools />
+      </div>;
   }
 }
